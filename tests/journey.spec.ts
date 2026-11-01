@@ -41,7 +41,7 @@ test("offline five-step journey, backtracking, comparison, persistence and colla
   await expect(
     page.getByRole("button", { name: "Show branches" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Revisit next step" }).click();
+  await page.getByRole("button", { name: "Explore next step" }).click();
   await expect(page.getByText("STEP 5 OF 5", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Save locally" }).click();
   await page.reload();

@@ -26,10 +26,34 @@ type CardData = {
   root: boolean;
   branch: number;
   mobile: boolean;
+  overview: boolean;
   insight: string;
   assessment: "fresh" | "updated" | "stale";
 };
 function Card({ data }: NodeProps<Node<CardData>>) {
+  if (data.overview)
+    return (
+      <div
+        className={`map-card overview-card ${data.violet ? "violet" : ""}`}
+        role="button"
+        tabIndex={0}
+        aria-label={`Explore ${data.title}`}
+        title={data.title}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.currentTarget.click();
+          }
+        }}
+      >
+        <Handle type="target" position={Position.Left} />
+        <span className="node-eyebrow">
+          {data.root ? "START" : `STEP ${data.depth}`}
+        </span>
+        <strong>{data.title}</strong>
+        <Handle type="source" position={Position.Right} />
+      </div>
+    );
   return (
     <div
       role="button"
@@ -165,6 +189,9 @@ function FlowCanvas({
           .slice(0, -1)
           .some((a) => collapsed.includes(a.id)),
     );
+    const overview =
+      visible.length > 20 && selected === "root" && collapsed.length === 0;
+    const vertical = mobile && !overview;
     const positions = new Map<string, number>();
     let leaf = 0;
     function place(id: string): number {
@@ -172,7 +199,7 @@ function FlowCanvas({
       const y = children.length
         ? children.map((n) => place(n.id)).reduce((a, b) => a + b, 0) /
           children.length
-        : leaf++ * 395;
+        : leaf++ * (overview ? 48 : 395);
       positions.set(id, y);
       return y;
     }
@@ -182,8 +209,8 @@ function FlowCanvas({
         id: "root",
         type: "card",
         position: {
-          x: mobile ? 20 : 0,
-          y: mobile ? 0 : positions.get("root") || 0,
+          x: vertical ? 20 : 0,
+          y: vertical ? 0 : positions.get("root") || 0,
         },
         data: {
           title:
@@ -199,15 +226,19 @@ function FlowCanvas({
           insight: "",
           assessment: "fresh",
           branch: 0,
-          mobile,
+          mobile: vertical,
+          overview,
         },
       },
       ...visible.map((n, index) => ({
         id: n.id,
         type: "card",
-        position: mobile
+        position: vertical
           ? { x: 0, y: 290 + index * 375 }
-          : { x: n.depth * 490, y: positions.get(n.id) || 0 },
+          : {
+              x: n.depth * (overview ? 420 : 490),
+              y: positions.get(n.id) || 0,
+            },
         data: {
           title: n.title,
           summary: n.summary,
@@ -231,7 +262,8 @@ function FlowCanvas({
               ? ("updated" as const)
               : ("fresh" as const),
           root: false,
-          mobile,
+          mobile: vertical,
+          overview,
         },
       })),
     ];
@@ -243,7 +275,7 @@ function FlowCanvas({
         target: n.id,
         type: "possibility",
         data: {
-          mobile,
+          mobile: vertical,
           active: active.has(n.id),
           violet:
             scenario.nodes
@@ -262,7 +294,10 @@ function FlowCanvas({
       : 450;
     const timer = setTimeout(() => {
       const target = nodes.find((n) => n.id === selected);
-      if (nodes.length <= (mobile ? 3 : 5))
+      if (
+        nodes.length <= (mobile ? 3 : 5) ||
+        (selected === "root" && collapsed.length === 0)
+      )
         flow.fitView({ padding: 0.18, duration, maxZoom: 1 });
       else if (target)
         flow.setCenter(target.position.x + 160, target.position.y + 140, {
@@ -280,7 +315,7 @@ function FlowCanvas({
       edgeTypes={edgeTypes}
       onNodeClick={(_, n) => onSelect(n.id)}
       fitView
-      minZoom={0.2}
+      minZoom={nodes.length > 20 ? 0.02 : 0.2}
       maxZoom={1.5}
       nodesDraggable={false}
       nodesFocusable={false}

@@ -1,0 +1,9 @@
+.env*
+.crossroads/
+node_modules/
+.next/
+.git/
+docs/
+test-results/
+playwright-report/
+*.tsbuildinfo

@@ -7,6 +7,14 @@ export const maxDuration = 60;
 let requests = 0;
 let active = 0;
 export async function POST(req: Request) {
+  if (process.env.NEXT_PUBLIC_DEMO_ONLY === "true")
+    return NextResponse.json(
+      {
+        error:
+          "Live generation is disabled for this showcase. Open the offline demo to explore all five levels.",
+      },
+      { status: 503 },
+    );
   const origin = req.headers.get("origin");
   if (origin) {
     // Next can construct req.url with its bind address (0.0.0.0).

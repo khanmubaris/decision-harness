@@ -275,3 +275,21 @@ export function createDemo(): Scenario {
     corrections: "",
   };
 }
+
+/** Materialise every authored branch for presentations, without calling the model. */
+export function createDemoTree(): Scenario {
+  const scenario = createDemo();
+  let paths = scenario.nodes.map((node) => [node]);
+  for (let depth = 2; depth <= 5; depth++) {
+    paths = paths.flatMap((path) => {
+      const children = attach(
+        demoChoices(path, scenario.context),
+        path.at(-1)!.id,
+        depth,
+      );
+      scenario.nodes.push(...children);
+      return children.map((child) => [...path, child]);
+    });
+  }
+  return scenario;
+}

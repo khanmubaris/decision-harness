@@ -49,6 +49,8 @@ Savings divided by monthly living expenses is a deterministic **personal expense
 
 > I'm 29, earning £90,000 in London. I have £40,000 in savings and I'm considering leaving my job to build an AI startup. Should I quit now or continue working while building the business?
 
+**Try the demo** now prepares a complete five-level tree (62 choices) locally. Use **Show all five levels** to see its compact overview or explore the prepared branches one step at a time. Selecting an overview node opens its full analysis.
+
 The two paths are **Quit and build full-time** and **Stay employed and build part-time**. The demo explicitly adds a £2,500 monthly living-expense assumption and a six-month protected personal buffer. Changing savings from £40,000 to £15,000 changes no-income expense cover from **16 to 6 months**. The authored full-time analysis then explains the lack of margin above that floor; the employed path retains its income-versus-time trade-off. The UI clearly distinguishes these local, authored updates from live model reasoning. Other demo inputs are recorded as context, not interpreted by an AI.
 
 See [DEMO.md](DEMO.md) for the hackathon pitch and complete demonstration narrative.
@@ -109,3 +111,15 @@ npm run test:e2e
 Tests cover the five-step graph, comparison, persistence, collapse, loading, mobile, reduced motion, bounded preloading, structured API wiring, local calculations, What If changes, stale-branch handling and failures. Mocked responses verify integration, not live model quality. [VALIDATION.md](VALIDATION.md) records completed checks and their limits.
 
 This remains a local hackathon application. Outcomes are hypothetical and may be wrong. No external facts are verified. Live quality and latency vary. No public deployment has been performed. Long-term journals, outcome tracking, external data, advanced financial simulation, automated evaluation feedback loops and multi-user features remain outside today's scope.
+
+## Hackathon showcase deployment
+
+Set `NEXT_PUBLIC_DEMO_ONLY=true` at both build time and runtime to publish the interface without live AI. The page clearly labels the showcase, form submission opens the authored five-level tree, and the live decision endpoint returns a disabled message. No OpenAI key is needed. Remove the flag and rebuild to restore live generation.
+
+For Vercel, link the project and deploy with:
+
+```sh
+vercel deploy --prod --yes --build-env NEXT_PUBLIC_DEMO_ONLY=true --env NEXT_PUBLIC_DEMO_ONLY=true
+```
+
+`.vercelignore` excludes local environment files, personal defaults, screenshots and build artifacts from upload.

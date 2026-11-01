@@ -146,3 +146,15 @@ Verification against the running production application:
 - Captured and visually inspected the actual homepage using an isolated Playwright Chromium browser. Direct computer-use browser access remains disabled; no personal browser was used. Desktop, full-page, mobile, hero detail, workflow and mobile comparison screenshots are in `docs/landing-harness-*.png`.
 
 Main screenshots: `docs/landing-harness-desktop.png`, `docs/landing-harness-full.png`, `docs/landing-harness-mobile-viewport.png`, `docs/landing-harness-mobile.png`. These checks use authored demo content or mocked generation responses; no live AI request was needed for this landing-only change.
+
+## Complete five-level offline demo — 1 November 2026
+
+The presentation demo now materialises all 62 authored choices across five decision levels (plus the starting point), with valid ancestry and no sixth level. It opens with folded branches for guided exploration; **Show all five levels** displays a compact, selectable overview on desktop and mobile. **Focus first choices** restores the guided view. Selecting an overview node opens full analysis, and saves retain all prepared nodes plus the current selection and folded branches. Live generation remains incremental.
+
+Validation: production build and 26 unit tests passed. The 13 existing journey, map and harness browser checks passed; two new desktop/mobile checks verify the entire 63-node overview, 32 fifth-level leaves, direct selection of a fifth-level node, the five-step stopping point, save/restore, no horizontal overflow and zero AI requests. Following visual review, compact overview cards were refined and the affected browser checks rerun successfully. Screenshots were captured in an isolated Chromium browser.
+
+## Keyless hackathon showcase preparation
+
+Added explicit `NEXT_PUBLIC_DEMO_ONLY=true` build/runtime mode. The landing page labels the showcase; the context form explains that entries are not analysed and its primary action opens the authored demo. The decision API refuses live requests in this mode even if a local key exists. Deployment uploads exclude `.env*` and `.crossroads/`.
+
+The showcase production build passed. An isolated browser verified the banner, context-form-to-demo flow, all 63 graph nodes, selectable analysis and zero AI requests. A direct request confirmed that the live endpoint returns the showcase-disabled response. Hosting authentication is required before publication.

@@ -1,11 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createDemo, demoChoices } from "../lib/decision/demo";
+import { createDemo, createDemoTree, demoChoices } from "../lib/decision/demo";
 import {
   attach,
   pathTo,
   requestSchema,
   resultSchema,
+  scenarioSchema,
 } from "../lib/decision/schema";
 import { runway } from "../lib/finance/calculate";
 test("all demo branches support five successive context-preserving steps", () => {
@@ -98,4 +99,26 @@ test("legacy saved maps and requests receive the same default model", async () =
     scenarioSchema.parse({ ...oldMap, model: "gpt-5.4" }).model,
     "gpt-5.4",
   );
+});
+
+test("presentation tree is complete to depth five with valid ancestry and no sixth level", () => {
+  const scenario = scenarioSchema.parse(createDemoTree());
+  assert.equal(scenario.nodes.length, 62);
+  assert.equal(new Set(scenario.nodes.map((node) => node.id)).size, 62);
+  for (let depth = 1; depth <= 5; depth++) {
+    assert.equal(
+      scenario.nodes.filter((node) => node.depth === depth).length,
+      2 ** depth,
+    );
+  }
+  for (const node of scenario.nodes) {
+    const path = pathTo(scenario.nodes, node.id);
+    assert.equal(path.length, node.depth);
+    assert.equal(
+      scenario.nodes.filter((child) => child.parentId === node.id).length,
+      node.depth === 5 ? 0 : 2,
+    );
+    if (node.depth > 1)
+      assert.ok(node.assumptions[0].includes(path.at(-2)!.title));
+  }
 });

@@ -40,7 +40,7 @@ import {
   type Scenario,
 } from "@/lib/decision/schema";
 import {
-  createDemo,
+  createDemoTree,
   demoChoices,
   demoContext,
   demoQuestion,
@@ -55,6 +55,8 @@ import {
 const DecisionGraph = dynamic(() => import("@/components/DecisionGraph"), {
   ssr: false,
 });
+const demoOnly = process.env.NEXT_PUBLIC_DEMO_ONLY === "true";
+
 export default function Home() {
   const [question, setQuestion] = useState("");
   const [model, setModel] = useState<ModelId>(DEFAULT_MODEL);
@@ -337,10 +339,13 @@ export default function Home() {
   }
   function openDemo() {
     preloader.clear();
-    setScenario(createDemo());
+    const demo = createDemoTree();
+    setScenario(demo);
     setSelected("root");
     setPins([]);
-    setCollapsed([]);
+    setCollapsed(
+      demo.nodes.filter((node) => node.depth < 5).map((node) => node.id),
+    );
     setForm(false);
     setError("");
     setNotice("");
@@ -420,6 +425,17 @@ export default function Home() {
   return (
     <>
       {header}
+      {demoOnly && !scenario && (
+        <div className="judge-demo-notice">
+          <span>
+            <strong>Hackathon showcase</strong> · Explore a fictional five-level
+            decision tree. Live AI generation is disabled.
+          </span>
+          <button onClick={openDemo}>
+            Open judge demo <ArrowRight size={14} />
+          </button>
+        </div>
+      )}
       {!scenario ? (
         <LandingPage
           onStart={(value) => start(value ?? question)}
@@ -536,6 +552,35 @@ export default function Home() {
               </p>
             </div>
           )}
+          {scenario.mode === "demo" &&
+            scenario.nodes.length === 62 &&
+            !scenario.lastChange && (
+              <div className="demo-tree-toolbar">
+                <span>
+                  <strong>Five levels ready</strong> · 62 authored choices · No
+                  AI requests
+                </span>
+                <button
+                  className="outline small"
+                  onClick={() => {
+                    setSelected("root");
+                    setDetailsOpen(false);
+                    setCollapsed(
+                      collapsed.length
+                        ? []
+                        : scenario.nodes
+                            .filter((node) => node.depth < 5)
+                            .map((node) => node.id),
+                    );
+                  }}
+                >
+                  <GitBranch size={14} />
+                  {collapsed.length
+                    ? "Show all five levels"
+                    : "Focus first choices"}
+                </button>
+              </div>
+            )}
           <div className="map-toolbar">
             <div className="step-track">
               <span>YOUR EXPLORATION</span>
@@ -648,7 +693,9 @@ export default function Home() {
                         )}{" "}
                         {busy
                           ? "Exploring possibilities…"
-                          : scenario.nodes.some((n) => n.parentId === selected)
+                          : scenario.nodes.some(
+                                (n) => n.parentId === selected,
+                              ) && !collapsed.includes(selected)
                             ? "Revisit next step"
                             : "Explore next step"}
                         <ArrowRight size={16} />
@@ -928,15 +975,16 @@ export default function Home() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    generate();
+                    if (demoOnly) openDemo();
+                    else generate();
                   }}
                 >
                   <label>
                     Your crossroads
                     <textarea
                       autoFocus
-                      required
-                      minLength={10}
+                      required={!demoOnly}
+                      minLength={demoOnly ? undefined : 10}
                       maxLength={2000}
                       value={question}
                       onChange={(e) => setQuestion(e.target.value)}
@@ -1145,6 +1193,13 @@ export default function Home() {
                     context to OpenAI. Local saving is opt-in. Use fictional
                     information for the demo.
                   </p>
+                  {demoOnly && (
+                    <p className="judge-form-notice">
+                      This showcase opens the fictional startup decision tree.
+                      Your entries let you preview the form; they are not
+                      analysed or sent to an AI.
+                    </p>
+                  )}
                   <button className="primary" type="submit" disabled={busy}>
                     {busy ? (
                       <LoaderCircle size={17} className="spin" />
@@ -1153,7 +1208,9 @@ export default function Home() {
                     )}{" "}
                     {busy
                       ? "Mapping your possibilities…"
-                      : "Generate my crossroads"}
+                      : demoOnly
+                        ? "Open five-level demo"
+                        : "Generate my crossroads"}
                     <ArrowRight size={17} />
                   </button>
                   <div className="demo-links">

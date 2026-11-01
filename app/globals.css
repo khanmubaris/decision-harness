@@ -2854,3 +2854,86 @@ footer {
 .what-if-more[open] > summary {
   margin-bottom: 20px;
 }
+
+.demo-tree-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border: 1px solid #415c49;
+  border-radius: 8px;
+  background: #1b2a20;
+  color: #acbdb0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.demo-tree-toolbar strong {
+  color: var(--mint);
+  font-weight: 500;
+}
+.demo-tree-toolbar button {
+  min-height: 40px;
+}
+
+.cinematic-explorer .map-card.overview-card {
+  width: 260px;
+  height: 36px;
+  min-height: 0;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  border-radius: 6px;
+  animation: none;
+}
+.cinematic-explorer .overview-card .node-eyebrow {
+  flex-shrink: 0;
+  font-size: 8px;
+  letter-spacing: 0.5px;
+}
+.cinematic-explorer .overview-card strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.judge-demo-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 13px 5%;
+  border-bottom: 1px solid #3e5545;
+  background: #1c2b22;
+  color: #bbcbbf;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.judge-demo-notice strong {
+  color: var(--mint);
+  font-weight: 500;
+}
+.judge-demo-notice button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mint);
+  padding: 8px 0;
+}
+.judge-form-notice {
+  padding: 12px;
+  border: 1px solid #3e5545;
+  border-radius: 6px;
+  background: #1c2b22;
+  color: #bbcbbf;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 12px 0;
+}

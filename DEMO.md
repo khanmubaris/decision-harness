@@ -27,6 +27,10 @@ Consumer-facing tagline: **Stop asking AI what to do. Start testing what could h
 
 Select either path in the illustrative hero, inspect its assumptions, then try **What if your savings decreased?** The local expense-cover calculation changes from 16 to 6 months; no AI request is made. The connected Define → Explore → Challenge → Stress-test → Decide walkthrough, savings slider and priority comparison are also interactive. **Put a decision to the test** opens the real profile workflow; all four example questions prefill it.
 
+## Five-level presentation tree
+
+**Try the demo** prepares all 62 choices across five decision levels immediately, without API requests. It starts with the first pair visible for a readable walkthrough. Click **Show all five levels** for the complete branching overview, then select any compact node to inspect it. **Focus first choices** returns to the guided view. **Explore next step** reveals prepared branches through level five; there is no sixth decision level. Saved demos retain the entire tree and collapsed branches.
+
 ## A two-minute walkthrough
 
 **0–20 seconds — Understand**
