@@ -158,3 +158,11 @@ Validation: production build and 26 unit tests passed. The 13 existing journey, 
 Added explicit `NEXT_PUBLIC_DEMO_ONLY=true` build/runtime mode. The landing page labels the showcase; the context form explains that entries are not analysed and its primary action opens the authored demo. The decision API refuses live requests in this mode even if a local key exists. Deployment uploads exclude `.env*` and `.crossroads/`.
 
 The showcase production build passed. An isolated browser verified the banner, context-form-to-demo flow, all 63 graph nodes, selectable analysis and zero AI requests. A direct request confirmed that the live endpoint returns the showcase-disabled response. Hosting authentication is required before publication.
+
+## Published hackathon showcase
+
+Production URL: https://decision-harness.vercel.app
+
+Vercel production deployment `dpl_JDsccY9HYbojfbZDBL3DssKJKc7u` built successfully from the showcase implementation. `NEXT_PUBLIC_DEMO_ONLY=true` is stored for production as well as applied to this release. No API key or private profile was uploaded. Publication used the CLI; the optional GitHub auto-deploy connection was unavailable and is not configured.
+
+Verified with unauthenticated HTTP requests and an isolated Chromium session: homepage 200 without sign-in, showcase form opens the demo, all 63 graph nodes render, node analysis opens, savings What If updates from 16 to 6 months, mobile width fits, zero browser AI calls, public profile is null, live endpoint returns the showcase-disabled 503 response, and no browser page errors. Browser assertions allow for remote script loading rather than the shorter local-test deadlines.

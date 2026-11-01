@@ -1,5 +1,7 @@
 # Crossroads — The Personal AI Decision Harness
 
+**Live hackathon showcase:** https://decision-harness.vercel.app — no sign-in or API key required. Choose **Open judge demo**, then **Show all five levels**.
+
 **Stop asking AI what to do. Start testing what could happen.**
 
 Explore possible futures, challenge assumptions, and make life's important decisions with greater clarity.
@@ -123,3 +125,5 @@ vercel deploy --prod --yes --build-env NEXT_PUBLIC_DEMO_ONLY=true --env NEXT_PUB
 ```
 
 `.vercelignore` excludes local environment files, personal defaults, screenshots and build artifacts from upload.
+
+The current production release was published with the Vercel CLI. Automatic GitHub deployments are not connected; repeat the production deployment command above after code changes.
