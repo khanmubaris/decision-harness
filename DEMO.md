@@ -1,5 +1,26 @@
 # Crossroads — The Personal AI Decision Harness
 
+## 70-second hackathon demo
+
+Live site: [decision-harness.vercel.app](https://decision-harness.vercel.app).
+
+**Before recording:** use a desktop window and prepare two tabs: the landing page, and the same site with **Open judge demo** already opened. Wait for both initial cards to appear. This avoids spending the recording on first-load downloads. Start with the original £40,000 savings and no comparison selections. Reopen the demo between takes to reset it.
+
+The spoken script below is about 145 words. Aim for a conversational pace, perform the clicks while speaking, and rehearse once with a timer. The time windows are targets, not a guarantee of delivery speed.
+
+| Time | Show / do | Say |
+| --- | --- | --- |
+| 0–10s | Show the landing-page headline. | “Big decisions deserve more than a single answer. Crossroads is a personal AI decision harness for exploring choices and testing assumptions.” |
+| 10–20s | Switch to a second, preloaded tab with **Open judge demo** already open. Show the two initial choices. | “Should you leave your job to build a startup, or keep earning while building part-time? This fictional showcase uses pre-generated scenarios.” |
+| 20–30s | Click **Show all five levels**, pause briefly, then **Focus first choices**. Select **Quit and build full-time**, then **Add to comparison**. | “Each choice opens another. This demo maps five decision levels, with explanations, risks, and trade-offs you can inspect.” |
+| 30–47s | Click **What if things change?** Replace **Savings** with `GBP 15000`. Point to **16 → 6 months** in the preview. | “Now reduce savings from forty thousand pounds to fifteen thousand. With no income and assumed monthly living costs of twenty-five hundred, personal expense cover falls from sixteen months to six, before business costs.” |
+| 47–60s | Click **Reconsider these paths**. Show the changed reasoning, then select **Stay employed and build part-time**, **Add to comparison**, and **Compare paths**. | “Reconsidering highlights what changed. Full-time gives you focus; part-time preserves income. Compare the paths to see which trade-offs fit your priorities.” |
+| 60–70s | Hold on the comparison table. Finish speaking; avoid another click. | “Crossroads doesn’t predict your future or choose for you. It helps you understand your options before you commit.” |
+
+The deployed showcase uses authored offline scenarios. Do not describe this run as live AI generation. Its savings calculation assumes no income and excludes business costs, taxes and emergencies. Reconsidering the first pair clears later branches that depended on the original assumptions, so show the full tree **before** changing savings.
+
+If clicks run behind, skip the comparison window and finish on the updated reasoning. Keep the closing sentence; do not rush through extra screens.
+
 ## The pitch
 
 “Coding agents have harnesses that help them explore solutions, test assumptions, and improve their results.

@@ -1,6 +1,10 @@
 # Crossroads — The Personal AI Decision Harness
 
-**Live hackathon showcase:** https://decision-harness.vercel.app — no sign-in or API key required. Choose **Open judge demo**, then **Show all five levels**.
+**[Open the live Crossroads demo →](https://decision-harness.vercel.app)**
+
+No sign-in or API key required. Choose **Open judge demo**, then **Show all five levels**. The public showcase uses pre-generated scenarios.
+
+[70-second demo script and screen cues](DEMO.md#70-second-hackathon-demo).
 
 **Stop asking AI what to do. Start testing what could happen.**
 
