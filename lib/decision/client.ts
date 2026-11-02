@@ -2,8 +2,9 @@ import { resultSchema, type Scenario } from "./schema";
 
 type DecisionInput = Pick<
   Scenario,
-  "question" | "context" | "model" | "corrections"
+  "question" | "context" | "provider" | "exploration" | "corrections"
 > & {
+  apiKey: string;
   path: Scenario["nodes"];
   mode?: "explore" | "reconsider";
   alternatives?: Scenario["nodes"];

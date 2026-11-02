@@ -20,6 +20,7 @@ type CardData = {
   title: string;
   summary: string;
   depth: number;
+  maxDepth: number;
   horizon: string;
   active: boolean;
   violet: boolean;
@@ -89,7 +90,7 @@ function Card({ data }: NodeProps<Node<CardData>>) {
       <div className="node-eyebrow">
         {data.root ? (
           <GitBranch size={13} />
-        ) : data.depth === 5 ? (
+        ) : data.depth === data.maxDepth ? (
           <Flag size={13} />
         ) : (
           <span className="node-dot" />
@@ -128,8 +129,8 @@ function Card({ data }: NodeProps<Node<CardData>>) {
       )}
       <div className="node-footer">
         {data.root
-          ? "Two choices. Many possibilities."
-          : data.depth === 5
+          ? "Possible paths. Your choice."
+          : data.depth === data.maxDepth
             ? "A possible future"
             : "Explore this possibility"}
         <span>→</span>
@@ -219,6 +220,7 @@ function FlowCanvas({
               : scenario.question.slice(0, 70),
           summary: scenario.tradeoff,
           depth: 0,
+          maxDepth: scenario.exploration.maxDepth,
           horizon: "",
           active: selected === "root",
           violet: false,
@@ -243,6 +245,7 @@ function FlowCanvas({
           title: n.title,
           summary: n.summary,
           depth: n.depth,
+          maxDepth: scenario.exploration.maxDepth,
           horizon: n.horizon,
           active: active.has(n.id),
           violet:

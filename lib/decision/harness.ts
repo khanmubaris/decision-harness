@@ -162,8 +162,9 @@ export function matchReconsideredAlternatives(
 ): Result {
   const result = reconsiderResultSchema.parse(raw);
   if (
-    alternatives.length !== 2 ||
-    new Set(result.choices.map((choice) => choice.alternativeId)).size !== 2 ||
+    alternatives.length !== result.choices.length ||
+    new Set(result.choices.map((choice) => choice.alternativeId)).size !==
+      alternatives.length ||
     result.choices.some(
       (choice) =>
         !alternatives.some((node) => node.id === choice.alternativeId),

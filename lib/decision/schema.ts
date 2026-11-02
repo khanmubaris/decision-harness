@@ -1,4 +1,4 @@
-import { modelSchema, DEFAULT_MODEL, type ModelId } from "../ai/models";
+import { DEFAULT_MODEL } from "../ai/models";
 import { z } from "zod";
 export const contextSchema = z.object({
   location: z.string().max(150),
@@ -75,7 +75,8 @@ export const resultSchema = z.object({
   constraints: z.array(z.string().max(300)).max(6),
   choices: z
     .array(choiceSchema.extend({ evaluation: evaluationSchema }))
-    .length(2),
+    .min(2)
+    .max(4),
 });
 export const reconsiderResultSchema = resultSchema.extend({
   choices: z
@@ -84,29 +85,59 @@ export const reconsiderResultSchema = resultSchema.extend({
         alternativeId: z.string().max(100),
       }),
     )
-    .length(2),
+    .min(2)
+    .max(4),
 });
 export const nodeSchema = choiceSchema.extend({
   id: z.string().max(100),
   parentId: z.string().max(100),
-  depth: z.number().int().min(1).max(5),
+  depth: z.number().int().min(1).max(8),
+});
+export const explorationSchema = z.object({
+  branchingFactor: z.number().int().min(2).max(4).default(2),
+  maxDepth: z.number().int().min(3).max(8).default(5),
+});
+export const providerSchema = z.enum([
+  "openai",
+  "anthropic",
+  "kimi",
+  "compatible",
+]);
+export const providerConfigSchema = z.object({
+  provider: providerSchema.default("openai"),
+  model: z.string().trim().min(1).max(200).default(DEFAULT_MODEL),
+  baseUrl: z.string().trim().max(500).default(""),
 });
 export const requestSchema = z.object({
-  model: modelSchema.default(DEFAULT_MODEL),
+  // The key is request-only. It is deliberately absent from Scenario/storage.
+  apiKey: z.string().trim().min(1).max(1000).optional(),
+  provider: providerConfigSchema.default({
+    provider: "openai",
+    model: DEFAULT_MODEL,
+    baseUrl: "",
+  }),
+  exploration: explorationSchema.default({ branchingFactor: 2, maxDepth: 5 }),
+  // Legacy input compatibility. New clients use provider.model.
+  model: z.string().trim().min(1).max(200).default(DEFAULT_MODEL),
   question: z.string().trim().min(10).max(2000),
   context: contextSchema,
-  path: z.array(nodeSchema).max(4),
+  path: z.array(nodeSchema).max(7),
   corrections: z.string().max(1500).default(""),
   mode: z.enum(["explore", "reconsider"]).default("explore"),
-  alternatives: z.array(nodeSchema).max(2).default([]),
+  alternatives: z.array(nodeSchema).max(4).default([]),
   previousContext: contextSchema.optional(),
 });
 export type Context = z.infer<typeof contextSchema>;
 export type Choice = z.infer<typeof choiceSchema>;
 export type DecisionNode = z.infer<typeof nodeSchema>;
 export type Result = z.infer<typeof resultSchema>;
+export type Exploration = z.infer<typeof explorationSchema>;
+export type ProviderConfig = z.infer<typeof providerConfigSchema>;
 export type Scenario = {
-  model: ModelId;
+  /** Legacy saved-map compatibility; provider.model is authoritative. */
+  model?: string;
+  provider: ProviderConfig;
+  exploration: Exploration;
   id: string;
   question: string;
   context: Context;
@@ -177,7 +208,14 @@ export const changeSchema = z.object({
   currentRunway: z.number().nullable(),
 });
 export const scenarioSchema = z.object({
-  model: modelSchema.default(DEFAULT_MODEL),
+  // model is retained only to migrate saved v1 maps; newly saved maps use provider.
+  model: z.string().optional(),
+  provider: providerConfigSchema.default({
+    provider: "openai",
+    model: DEFAULT_MODEL,
+    baseUrl: "",
+  }),
+  exploration: explorationSchema.default({ branchingFactor: 2, maxDepth: 5 }),
   id: z.string(),
   question: z.string().max(2000),
   context: contextSchema,
@@ -185,16 +223,16 @@ export const scenarioSchema = z.object({
   tradeoff: z.string(),
   category: resultSchema.shape.category,
   constraints: z.array(z.string()),
-  nodes: z.array(nodeSchema).max(62),
+  nodes: z.array(nodeSchema).max(87380),
   mode: z.enum(["live", "demo"]),
   corrections: z.string().max(1500),
-  staleNodeIds: z.array(z.string()).max(62).optional(),
+  staleNodeIds: z.array(z.string()).max(87380).optional(),
   lastChange: changeSchema.optional(),
   view: z
     .object({
       selected: z.string(),
       pins: z.array(z.string()).max(2),
-      collapsed: z.array(z.string()).max(62),
+      collapsed: z.array(z.string()).max(87380),
     })
     .optional(),
 });

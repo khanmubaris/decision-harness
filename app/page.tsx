@@ -46,12 +46,7 @@ import {
   demoQuestion,
   demoReconsider,
 } from "@/lib/decision/demo";
-import {
-  DEFAULT_MODEL,
-  MODEL_OPTIONS,
-  modelLabel,
-  type ModelId,
-} from "@/lib/ai/models";
+import { DEFAULT_MODEL } from "@/lib/ai/models";
 const DecisionGraph = dynamic(() => import("@/components/DecisionGraph"), {
   ssr: false,
 });
@@ -59,7 +54,13 @@ const demoOnly = process.env.NEXT_PUBLIC_DEMO_ONLY === "true";
 
 export default function Home() {
   const [question, setQuestion] = useState("");
-  const [model, setModel] = useState<ModelId>(DEFAULT_MODEL);
+  const [provider, setProvider] = useState<Scenario["provider"]>({
+    provider: "openai", model: DEFAULT_MODEL, baseUrl: "",
+  });
+  const [apiKey, setApiKey] = useState("");
+  const [exploration, setExploration] = useState<Scenario["exploration"]>({
+    branchingFactor: 2, maxDepth: 5,
+  });
   const [context, setContext] = useState<Context>(emptyContext);
   const [form, setForm] = useState(false);
   const [profile, setProfile] = useState<Context | null>(null);
@@ -90,6 +91,7 @@ export default function Home() {
     preloader.getSnapshot,
   );
   useEffect(() => () => preloader.clear(), [preloader]);
+  useEffect(() => preloader.setApiKey(apiKey), [apiKey, preloader]);
   useEffect(() => {
     if (!scenario || scenario.mode !== "live") {
       preloader.clear();
@@ -213,7 +215,7 @@ export default function Home() {
     current && scenario?.staleNodeIds?.includes(current.id),
   );
   async function reconsider(nextContext: Context, nextCorrections: string) {
-    if (!scenario || lock.current || currentPair.length !== 2) return;
+    if (!scenario || lock.current || currentPair.length !== scenario.exploration.branchingFactor) return;
     lock.current = true;
     preloader.clear();
     setBusy(true);
@@ -226,7 +228,9 @@ export default function Home() {
           : await requestDecision({
               question: scenario.question,
               context: nextContext,
-              model: scenario.model,
+              provider: scenario.provider,
+              exploration: scenario.exploration,
+              apiKey,
               corrections: nextCorrections,
               path: parentPath,
               mode: "reconsider",
@@ -262,7 +266,9 @@ export default function Home() {
       question: scenario?.question || question,
       context: scenario?.context || context,
       path,
-      model: scenario?.model ?? model,
+      provider: scenario?.provider ?? provider,
+      exploration: scenario?.exploration ?? exploration,
+      apiKey,
       corrections: scenario?.corrections || "",
     });
   }
@@ -286,7 +292,8 @@ export default function Home() {
         constraints: data.constraints,
         nodes: attach(data.choices),
         mode: "live",
-        model,
+        provider,
+        exploration,
         corrections: "",
       });
       setSelected("root");
@@ -306,7 +313,7 @@ export default function Home() {
     if (
       !scenario ||
       !current ||
-      current.depth >= 5 ||
+      current.depth >= scenario.exploration.maxDepth ||
       currentIsStale ||
       lock.current
     )
@@ -491,7 +498,7 @@ export default function Home() {
               {!current && (
                 <button
                   className="outline what-if-trigger"
-                  disabled={busy || currentPair.length !== 2}
+                  disabled={busy || currentPair.length !== scenario.exploration.branchingFactor}
                   onClick={() => setWhatIf(true)}
                 >
                   <Sparkles size={15} /> What if things change?
@@ -545,7 +552,7 @@ export default function Home() {
                   </p>
                 )}
               <p>
-                Two choices reconsidered.{" "}
+                {scenario.exploration.branchingFactor} choices reconsidered.{" "}
                 {scenario.staleNodeIds?.length
                   ? "Other paths are marked as using earlier assumptions."
                   : "Updated conclusions are highlighted in each path."}
@@ -584,7 +591,7 @@ export default function Home() {
           <div className="map-toolbar">
             <div className="step-track">
               <span>YOUR EXPLORATION</span>
-              {[1, 2, 3, 4, 5].map((n) => (
+              {Array.from({ length: scenario.exploration.maxDepth }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
                   title={`Step ${n}`}
@@ -651,7 +658,7 @@ export default function Home() {
                     >
                       <ChevronLeft size={15} /> Back a step
                     </button>
-                    <span>STEP {current.depth} OF 5</span>
+                    <span>STEP {current.depth} OF {scenario.exploration.maxDepth}</span>
                   </div>
                   <div className="eyebrow">A POSSIBLE DIRECTION</div>
                   <h2>{current.title}</h2>
@@ -675,12 +682,12 @@ export default function Home() {
                   <div className="detail-actions">
                     <button
                       className="outline what-if-trigger"
-                      disabled={busy || currentPair.length !== 2}
+                      disabled={busy || currentPair.length !== scenario.exploration.branchingFactor}
                       onClick={() => setWhatIf(true)}
                     >
                       <Sparkles size={15} /> What if things change?
                     </button>
-                    {current.depth < 5 ? (
+                    {current.depth < scenario.exploration.maxDepth ? (
                       <button
                         className="primary"
                         disabled={busy || currentIsStale}
@@ -702,13 +709,13 @@ export default function Home() {
                       </button>
                     ) : (
                       <div className="finish">
-                        <Check size={17} /> Five steps explored. A possibility,
+                        <Check size={17} /> {scenario.exploration.maxDepth} steps explored. A possibility,
                         not a prediction.
                       </div>
                     )}
                     {scenario.mode === "live" &&
                       !currentIsStale &&
-                      current.depth < 5 &&
+                      current.depth < scenario.exploration.maxDepth &&
                       !scenario.nodes.some(
                         (node) => node.parentId === selected,
                       ) && (
@@ -849,7 +856,9 @@ export default function Home() {
                             context: scenario.context,
                             path: [],
                             corrections,
-                            model: scenario.model,
+                            provider: scenario.provider,
+                            exploration: scenario.exploration,
+                            apiKey,
                           }),
                           signal: AbortSignal.timeout(55000),
                         });
@@ -899,7 +908,7 @@ export default function Home() {
             <span>
               {scenario.mode === "demo"
                 ? "Fictional profile · Offline demo · No API request"
-                : `${modelLabel(scenario.model)} · Generated with OpenAI · No external research`}
+                : `${scenario.provider.model} · Generated with your ${scenario.provider.provider} key · No external research`}
             </span>
           </div>
           {notice && (
@@ -1164,34 +1173,52 @@ export default function Home() {
                     {profileMessage && <p role="status">{profileMessage}</p>}
                   </div>
                   <div className="model-picker">
-                    <label htmlFor="ai-model">AI model</label>
+                    <label htmlFor="ai-provider">Your AI provider</label>
                     <select
-                      id="ai-model"
-                      value={model}
+                      id="ai-provider"
+                      value={provider.provider}
                       disabled={busy}
-                      onChange={(e) => setModel(e.target.value as ModelId)}
-                      aria-describedby="model-description"
+                      onChange={(e) => {
+                        const next = e.target.value as Scenario["provider"]["provider"];
+                        setProvider({
+                          provider: next,
+                          baseUrl: next === "compatible" ? provider.baseUrl : "",
+                          model: next === "anthropic" ? "claude-sonnet-4-5" : next === "kimi" ? "kimi-k2.5" : DEFAULT_MODEL,
+                        });
+                      }}
                     >
-                      {MODEL_OPTIONS.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.label}
-                          {option.id === DEFAULT_MODEL ? " — recommended" : ""}
-                        </option>
-                      ))}
+                      <option value="openai">OpenAI</option>
+                      <option value="anthropic">Anthropic (Claude)</option>
+                      <option value="kimi">Kimi (Moonshot)</option>
+                      <option value="compatible">Another OpenAI-compatible API</option>
                     </select>
-                    <p id="model-description">
-                      {
-                        MODEL_OPTIONS.find((option) => option.id === model)
-                          ?.description
-                      }{" "}
-                      This model will be used for every step of this
-                      exploration.
-                    </p>
+                    <label htmlFor="ai-model">Model</label>
+                    <input id="ai-model" required value={provider.model} maxLength={200} onChange={(e) => setProvider({ ...provider, model: e.target.value })} placeholder="Model name" />
+                    {provider.provider === "compatible" && (
+                      <label htmlFor="api-base-url">API base URL
+                        <input id="api-base-url" required type="url" value={provider.baseUrl} maxLength={500} onChange={(e) => setProvider({ ...provider, baseUrl: e.target.value })} placeholder="https://api.example.com/v1" />
+                      </label>
+                    )}
+                    <label htmlFor="api-key">Your API key</label>
+                    <input id="api-key" required={!demoOnly} type="password" autoComplete="off" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Used only for this browser session" />
+                    <p id="model-description">Your key is sent only with requests to your selected provider, is never saved in this browser, and Crossroads never falls back to a server API key.</p>
+                  </div>
+                  <div className="form-grid exploration-config">
+                    <label>Paths at each crossroads
+                      <select value={exploration.branchingFactor} onChange={(e) => setExploration({ ...exploration, branchingFactor: Number(e.target.value) })}>
+                        {[2, 3, 4].map((n) => <option key={n} value={n}>{n} paths</option>)}
+                      </select>
+                    </label>
+                    <label>Exploration depth
+                      <select value={exploration.maxDepth} onChange={(e) => setExploration({ ...exploration, maxDepth: Number(e.target.value) })}>
+                        {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n} steps</option>)}
+                      </select>
+                    </label>
                   </div>
                   <p className="privacy">
                     <ShieldCheck size={14} /> Live mode sends your question and
-                    context to OpenAI. Local saving is opt-in. Use fictional
-                    information for the demo.
+                    context to the provider you choose. Your key stays in memory
+                    for this session only; saved maps never include it.
                   </p>
                   {demoOnly && (
                     <p className="judge-form-notice">

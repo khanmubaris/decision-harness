@@ -24,7 +24,8 @@ function scopeOf(scenario: Scenario) {
     scenario.id,
     scenario.question,
     scenario.context,
-    scenario.model,
+    scenario.provider,
+    scenario.exploration,
     scenario.corrections,
     scenario.nodes
       .filter((node) => node.parentId === "root")
@@ -42,7 +43,7 @@ export function nextPair(scenario: Scenario, selected: string) {
       );
   return pair.filter(
     (node) =>
-      node.depth < 5 &&
+      node.depth < scenario.exploration.maxDepth &&
       !scenario.staleNodeIds?.includes(node.id) &&
       !scenario.nodes.some((child) => child.parentId === node.id),
   );
@@ -57,18 +58,24 @@ export class BranchPrefetch {
   private queue: Entry[] = [];
   private snapshot: Readonly<Record<string, BranchStatus>> = {};
   private listeners = new Set<() => void>();
+  private apiKey = "";
 
   constructor(
     private readonly loader: Loader = async (scenario, path, signal) => {
-      const { question, context, model, corrections } = scenario;
+      const { question, context, provider, exploration, corrections } = scenario;
       return (
         await requestDecision(
-          { question, context, model, corrections, path },
+          { question, context, provider, exploration, corrections, path, apiKey: this.apiKey },
           signal,
         )
       ).choices;
     },
   ) {}
+
+  /** Kept only in this in-memory prefetcher; never written into a Scenario. */
+  setApiKey(apiKey: string) {
+    this.apiKey = apiKey;
+  }
 
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -128,7 +135,7 @@ export class BranchPrefetch {
     foreground: boolean,
   ): Promise<Choice[]> {
     const node = path.at(-1);
-    if (!node || node.depth >= 5)
+    if (!node || node.depth >= scenario.exploration.maxDepth)
       return Promise.reject(
         new Error("This path has no further generated steps."),
       );

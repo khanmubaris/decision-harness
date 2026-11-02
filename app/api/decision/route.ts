@@ -1,20 +1,10 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { requestSchema } from "@/lib/decision/schema";
-import { generate } from "@/lib/ai/engine";
+import { generate, ProviderError } from "@/lib/ai/engine";
 export const runtime = "nodejs";
 export const maxDuration = 60;
-let requests = 0;
 let active = 0;
 export async function POST(req: Request) {
-  if (process.env.NEXT_PUBLIC_DEMO_ONLY === "true")
-    return NextResponse.json(
-      {
-        error:
-          "Live generation is disabled for this showcase. Open the offline demo to explore all five levels.",
-      },
-      { status: 503 },
-    );
   const origin = req.headers.get("origin");
   if (origin) {
     // Next can construct req.url with its bind address (0.0.0.0).
@@ -53,11 +43,21 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Please enter a decision of 10–2,000 characters, choose a supported model, and check your context.",
+          "Enter a decision, a supported provider/model, and your own API key, then check your context.",
       },
       { status: 400 },
     );
   const path = parsed.data.path;
+  if (!parsed.data.apiKey)
+    return NextResponse.json(
+      { error: "Enter your own API key to generate live paths." },
+      { status: 400 },
+    );
+  if (path.length >= parsed.data.exploration.maxDepth)
+    return NextResponse.json(
+      { error: "This exploration has reached its selected depth." },
+      { status: 400 },
+    );
   if (
     path.some(
       (n, i) =>
@@ -73,14 +73,14 @@ export async function POST(req: Request) {
     const alternatives = parsed.data.alternatives;
     const parent = path.at(-1)?.id ?? "root";
     if (
-      alternatives.length !== 2 ||
-      alternatives[0].id === alternatives[1].id ||
+      alternatives.length !== parsed.data.exploration.branchingFactor ||
+      new Set(alternatives.map((node) => node.id)).size !== alternatives.length ||
       alternatives.some(
         (node) => node.parentId !== parent || node.depth !== path.length + 1,
       )
     ) {
       return NextResponse.json(
-        { error: "Choose two sibling paths to reconsider." },
+      { error: "Choose all sibling paths to reconsider." },
         { status: 400 },
       );
     }
@@ -92,23 +92,14 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  if (!process.env.OPENAI_API_KEY)
+  if (active >= 3)
     return NextResponse.json(
       {
         error:
-          "Live AI is not configured. Add OPENAI_API_KEY to .env.local and restart the server, or open the labelled offline demo.",
-      },
-      { status: 503 },
-    );
-  if (active >= 3 || requests >= Number(process.env.MAX_AI_REQUESTS || 100))
-    return NextResponse.json(
-      {
-        error:
-          "The demo server’s request limit has been reached. Try later or use the offline demo.",
+          "This service is busy. Please retry shortly.",
       },
       { status: 429 },
     );
-  requests++;
   active++;
   try {
     const result = await generate(parsed.data, req.signal);
@@ -130,17 +121,17 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(result);
   } catch (error) {
-    const status = error instanceof OpenAI.APIError ? error.status : undefined;
+    const status = error instanceof ProviderError ? error.status : undefined;
     const message =
       status === 429
-        ? "OpenAI is rate-limited or out of credits. Retry shortly or use the offline demo."
+        ? "Your AI provider is rate-limited or out of credits. Retry shortly."
         : status === 401
-          ? "The server API key was rejected. Check your .env.local configuration."
+          ? "That API key was rejected. Check the provider and key, then retry."
           : status === 403 || status === 404
-            ? "The selected model is unavailable to this API project. Choose another model for a new exploration."
-            : error instanceof OpenAI.APIConnectionTimeoutError
+            ? "The selected model is unavailable to this API key. Choose another model and retry."
+            : error instanceof DOMException && error.name === "TimeoutError"
               ? "Generation timed out. Your exploration is safe; please retry."
-              : "Could not generate a valid scenario. Please retry, or use the offline demo.";
+              : "Could not generate valid paths. Please check your provider details and retry.";
     return NextResponse.json(
       { error: message },
       { status: status === 429 ? 429 : 502 },

@@ -271,7 +271,9 @@ export function createDemo(): Scenario {
     constraints: [demoContext.constraints],
     nodes: attach(demoChoices([])),
     mode: "demo",
+    provider: { provider: "openai", model: DEFAULT_MODEL, baseUrl: "" },
     model: DEFAULT_MODEL,
+    exploration: { branchingFactor: 2, maxDepth: 5 },
     corrections: "",
   };
 }
