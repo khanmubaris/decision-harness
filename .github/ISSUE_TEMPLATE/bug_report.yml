@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a reproducible problem in Crossroads
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Please remove any personal data and API keys before posting."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. …\n2. …\n3. …"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?

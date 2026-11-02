@@ -116,7 +116,24 @@ npm run test:e2e
 
 Tests cover the five-step graph, comparison, persistence, collapse, loading, mobile, reduced motion, bounded preloading, structured API wiring, local calculations, What If changes, stale-branch handling and failures. Mocked responses verify integration, not live model quality. [VALIDATION.md](VALIDATION.md) records completed checks and their limits.
 
-This remains a local hackathon application. Outcomes are hypothetical and may be wrong. No external facts are verified. Live quality and latency vary. No public deployment has been performed. Long-term journals, outcome tracking, external data, advanced financial simulation, automated evaluation feedback loops and multi-user features remain outside today's scope.
+Outcomes are hypothetical and may be wrong. No external facts are verified. Live quality and latency vary. Long-term journals, outcome tracking, external data, advanced financial simulation, automated evaluation feedback loops and multi-user features remain outside today's scope.
+
+## Contributing
+
+Crossroads is open source under the [ISC license](LICENSE). Contributions, issue reports, design feedback, and new fictional demo scenarios are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report security concerns privately as described in [SECURITY.md](SECURITY.md).
+
+Before opening a pull request, run:
+
+```sh
+npm test
+npm run build
+```
+
+Good first contributions include improving accessibility, refining the decision graph, adding test coverage, and creating clearly labelled offline demo scenarios. Please do not add real personal data, API keys, outcome claims, invented probabilities, or financial predictions.
+
+## Project status
+
+This is an early, working open-source project. The public site is a keyless showcase with authored scenarios. Live AI generation remains available only when a maintainer configures their own server-side OpenAI key.
 
 ## Hackathon showcase deployment
 
