@@ -33,6 +33,8 @@ import {
   attach,
   emptyContext,
   contextSchema,
+  decisionHorizonLabel,
+  decisionHorizonValues,
   pathTo,
   resultSchema,
   scenarioSchema,
@@ -1063,11 +1065,11 @@ export default function Home() {
                         })
                       }
                     >
-                      {["1 year", "3 years", "5 years", "10 years"].map(
-                        (horizon) => (
-                          <option key={horizon}>{horizon}</option>
-                        ),
-                      )}
+                      {decisionHorizonValues.map((horizon) => (
+                        <option key={horizon} value={horizon}>
+                          {decisionHorizonLabel(horizon)}
+                        </option>
+                      ))}
                     </select>
                   </label>
                   <label>
@@ -1199,8 +1201,8 @@ export default function Home() {
                         <input id="api-base-url" required type="url" value={provider.baseUrl} maxLength={500} onChange={(e) => setProvider({ ...provider, baseUrl: e.target.value })} placeholder="https://api.example.com/v1" />
                       </label>
                     )}
-                    <label htmlFor="api-key">Your API key</label>
-                    <input id="api-key" required={!demoOnly} type="password" autoComplete="off" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Used only for this browser session" />
+                    <label htmlFor="api-key">Your API key (required for live generation)</label>
+                    <input id="api-key" required={!demoOnly} type="password" autoComplete="off" value={apiKey} onChange={(e) => { e.currentTarget.setCustomValidity(""); setApiKey(e.target.value); }} onInvalid={(e) => e.currentTarget.setCustomValidity("Add your own API key, or use the offline demo.")} placeholder="Add a key to generate live paths" />
                     <p id="model-description">Your key is sent only with requests to your selected provider, is never saved in this browser, and Crossroads never falls back to a server API key.</p>
                   </div>
                   <div className="form-grid exploration-config">

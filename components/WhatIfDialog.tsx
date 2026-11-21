@@ -4,6 +4,8 @@ import { ArrowRight, X, Info } from "lucide-react";
 import PossibilityLoader from "./PossibilityLoader";
 import {
   contextSchema,
+  decisionHorizonLabel,
+  decisionHorizonValues,
   type Context,
   type DecisionNode,
   type Scenario,
@@ -218,11 +220,11 @@ export default function WhatIfDialog({
                         field("decisionHorizon", event.target.value)
                       }
                     >
-                      {["1 year", "3 years", "5 years", "10 years"].map(
-                        (horizon) => (
-                          <option key={horizon}>{horizon}</option>
-                        ),
-                      )}
+                      {decisionHorizonValues.map((horizon) => (
+                        <option key={horizon} value={horizon}>
+                          {decisionHorizonLabel(horizon)}
+                        </option>
+                      ))}
                     </select>
                   </label>
                 </div>

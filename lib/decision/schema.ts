@@ -1,5 +1,18 @@
 import { DEFAULT_MODEL } from "../ai/models";
 import { z } from "zod";
+export const decisionHorizonValues = [
+  "7 days",
+  "2 weeks",
+  "1 month",
+  "3 months",
+  "6 months",
+  "1 year",
+  "3 years",
+  "5 years",
+  "10 years",
+] as const;
+export const decisionHorizonLabel = (horizon: (typeof decisionHorizonValues)[number]) =>
+  `${horizon} from today`;
 export const contextSchema = z.object({
   location: z.string().max(150),
   age: z.string().max(50),
@@ -10,9 +23,7 @@ export const contextSchema = z.object({
   risk: z.enum(["Low", "Medium", "High"]),
   goal: z.string().max(500),
   constraints: z.string().max(1000),
-  decisionHorizon: z
-    .enum(["1 year", "3 years", "5 years", "10 years"])
-    .default("3 years"),
+  decisionHorizon: z.enum(decisionHorizonValues).default("3 years"),
 });
 export const evaluationSchema = z.object({
   lifestyle: z.string().max(350),
